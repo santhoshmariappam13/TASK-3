@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    
+  </head>
+  <body>
+    <style>
+      body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Work Sans', sans-serif;
+    margin: 0;
+    background-color: #45126e;
+}
+
+header {
+    font-family: 'Work Sans', sans-serif;
+    font-weight: bold;
+}
+
+.start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #45126e;
+}
+  
+
+.start-button {
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+#play-again-button {
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.autoWinButton {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 20px;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.board {
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: space-evenly;
+    width: 350px;
+    height: 350px;
+}
+
+
+.card {
+    width: 50px;
+    height: 50px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 2px 2px 5px gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    cursor: pointer;
+    margin: 5px;
+    float: left;
+}
+
+.card.flipped {
+    background-color: lightgray;
+}
+
+.card.match {
+    opacity: 0.5;
+}
+
+.testingWindow {
+    width: 300px;
+    height: 80px;
+    background-color: #ddd;
+}
+
+.switch-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 20px;
+  }
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #2196F3;
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.autoWinButton {
+    display: block;
+    margin: auto auto;
+  }
+
+.win-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+  
+
+    </style>
+
+
+
+
+
+    <div class="start-screen">
+      <h1>Memory Game</h1>
+      <button class="start-button">Start</button>
+      <div class="switch-container">
+        <p>Testing Mode</p>
+        <label class="switch">
+          <input type="checkbox" id="toggleSwitch">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+        <div class="board"></div>
+        <div class="win-screen" id="win-screen">
+            <h2>You won!</h2>
+            <button id="play-again-button">Play Again</button>
+            <div class="switch-container">
+                <p>Testing Mode</p>
+                <label class="switch">
+                <input type="checkbox" id="toggleSwitch">
+                <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        <div class="testingWindow">
+            <button class="autoWinButton">Auto Win</button>
+        </div>
+    </div>
+    <script>const cards = [
+      "🍇", "🍇",
+      "🍊", "🍊",
+      "🍉", "🍉",
+      "🍓", "🍓",
+      "🍌", "🍌",
+      "🥭", "🥭",
+      "🍑", "🍑",
+      "🍈", "🍈",
+      "🍒", "🍒",
+      "🍍", "🍍"
+  ]
+  
+      ;
+  
+  let firstCard = null;
+  let secondCard = null;
+  let lockBoard = false;
+  
+  const startButton = document.querySelector('.start-button');
+  const playAgainButton = document.getElementById('play-again-button');
+  const board = document.querySelector('.board');
+  const startScreen = document.querySelector('.start-screen');
+  const winScreen = document.getElementById('win-screen');
+  const testingWindow = document.querySelector('.testingWindow');
+  
+  toggleDisplay(winScreen, false);
+  toggleDisplay(board, false);
+  toggleDisplay(testingWindow, false);
+  
+  startButton.addEventListener('click', event => {
+      shuffleCards();
+      toggleDisplay(startScreen, false);
+      toggleDisplay(board, true);
+      if (toggleSwitch.checked == true){
+          toggleDisplay(testingWindow, true);
+      }
+      else{}
+  });
+  
+  board.addEventListener('click', event => {
+      if (lockBoard) return;
+      const clickedCard = event.target;
+      if (clickedCard.classList.contains('card') && !clickedCard.classList.contains('flipped') && !clickedCard.classList.contains('match')) {
+          flipCard(clickedCard);
+          if (!firstCard) {
+              firstCard = clickedCard;
+          } else {
+              secondCard = clickedCard;
+              checkForMatch();
+          }
+      }
+  });
+  
+  function shuffleCards() {
+      const shuffledCards = shuffle(cards.slice());
+      const cardElements = [];
+      shuffledCards.forEach(card => {
+          const cardElement = document.createElement('div');
+          cardElement.classList.add('card');
+          cardElement.setAttribute('data-card', card);
+  
+          const cardInner = document.createElement('div');
+          cardInner.classList.add('card-inner');
+  
+          cardElement.appendChild(cardInner);
+          board.appendChild(cardElement);
+          cardElements.push(cardElement);
+      });
+  }
+  
+  function flipCard(card) {
+      card.classList.add('flipped');
+      const cardInner = card.querySelector('.card-inner');
+      cardInner.textContent = card.getAttribute('data-card');
+  }
+  
+  
+  function checkForMatch() {
+      if (firstCard.getAttribute('data-card') === secondCard.getAttribute('data-card')) {
+          firstCard.classList.add('match');
+          secondCard.classList.add('match');
+          firstCard.classList.remove('flipped');
+          secondCard.classList.remove('flipped');
+          firstCard.removeEventListener('click', flipCard);
+          secondCard.removeEventListener('click', flipCard);
+          setTimeout(() => {
+              checkForWin();
+          }, 1000);
+          firstCard = null;
+          secondCard = null;
+      } else {
+          lockBoard = true;
+          setTimeout(() => {
+              firstCard.querySelector('.card-inner').textContent = "";
+              secondCard.querySelector('.card-inner').textContent = "";
+              firstCard.classList.remove('flipped');
+              secondCard.classList.remove('flipped');
+              lockBoard = false;
+              firstCard = null;
+              secondCard = null;
+          }, 1000);
+      }
+  }
+  
+  function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+  }
+  
+  function checkForWin() {
+      const matchedCards = document.querySelectorAll('.match');
+      if (matchedCards.length === cards.length) {
+          toggleDisplay(board, false);
+          toggleDisplay(winScreen, true);
+          const matchedCards = document.querySelectorAll('.match');
+          if (matchedCards.length === cards.length) {
+              toggleDisplay(board, false);
+              toggleDisplay(winScreen, true);
+              matchedCards.forEach(card => {
+                  card.parentNode.removeChild(card);
+              });
+          }
+  
+      }
+  }
+  
+  // Add a click event listener to the play again button to hide the win screen
+  playAgainButton.addEventListener('click', event => {
+      toggleDisplay(winScreen, false);
+      shuffleCards();
+      toggleDisplay(startScreen, false);
+      toggleDisplay(board, true);
+  });
+  
+  function toggleDisplay(element, show) {
+      element.style.display = show ? 'flex' : 'none';
+  }
+  
+  const toggleSwitch = document.querySelector('#toggleSwitch');
+  
+  toggleSwitch.addEventListener('change', function () {
+      if (toggleSwitch.checked) {
+          // do something when toggle is on
+          const autoWinButton = document.querySelector('.autoWinButton');
+          autoWinButton.addEventListener("click", function () {
+              const allCards = document.querySelectorAll('.card');
+              allCards.forEach(card => {
+                  flipCard(card);
+                  card.classList.add("match");
+                  setTimeout(() => {
+                      checkForWin();
+                      toggleDisplay(testingWindow, false);
+                  }, 1000);
+                  })
+              });
+  
+      }
+      else {
+          // do something when toggle is off
+      }
+  });</script>
+  </body>
+</html>
